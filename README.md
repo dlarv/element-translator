@@ -30,6 +30,7 @@ Padding chars are added:
 '0the0'
 
 The char 't' is expanded like so:
+
         '0t'   't'    'th'
 $WORD = '00' + 't*' + 'th'
 
@@ -68,6 +69,7 @@ Foreach $W:
     - This is done by setting the 2 previous and 2 next bits to 0, aka clearing the adjacent bits.
     - If $W = 001, the next window is skipped.
 - If $W has 0 true values it is skipped.
+- If $W has 2 true values and the previous $WINDOW had 2 true values and $W != ??1, claim the first letter.
 
 E.G. 
 $W0 satisfies this condition, so the 't' and 'h' chars are claimed. This means 'h' and 'he' are no longer valid.
@@ -118,13 +120,15 @@ In the first 2 cases:
   1?1      001   SET(4), CLR(2,3), CLR(5,6)
     100      100                                        
 
-3rd case, W3 doesn't need #4
+4rd case, W3 doesn't need #4
 0123456
 011      001    SET(2), CLR(0,1), CLR(3,4)
   1?1      100                                         
     1??      0??                                       
 
-Therefore, the program should be able to do this in one pass.
+~~Therefore, the program should be able to do this in one pass.~~
+The current window does not have a method to differentiate between cases 3 and 4.
+So the algorithm will likely have to iterate twice to find the solution.
 
 ### Problem: Can the same letter be claimed twice?
 This should be impossible by definition.
