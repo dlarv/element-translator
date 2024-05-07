@@ -44,7 +44,7 @@ def main():
             discard = False
 
         index, best_solution = parse_best_solution(ordered_solutions)
-        output.append(f"{key},{val},{index},{best_solution}")
+        output.append(f"{key};{val};{index};{best_solution}")
 
     with open('solutions.txt', 'w') as stream:
         stream.write('\n'.join(output))

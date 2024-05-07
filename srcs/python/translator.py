@@ -74,7 +74,7 @@ class Word:
         return output
 
     def set_prev(self):
-        '''Case: 100
+        '''Case: 100, 110
             (P)rev and (C)urr are claimed
             O* OP P* (PC C* CN) N*
             O* 00 00 (PC 00 00) N*
@@ -106,7 +106,7 @@ class Word:
         self.letters[self.count + 1].clear()
 
     def set_next(self):
-        '''Case: 001
+        '''Case: 001, (011 1?0)
             (C)urr and (N)ext are claimed
             P* (PC C* CN) N* NO O*
             P* (00 00 CN) 00 00 O*
@@ -245,7 +245,7 @@ def convert(user_input: str, elements: list) -> Word:
     return output
 
 
-def transform(word: Word, elements: list) -> Word:
+def transform(word: Word) -> Word:
     while word.has_next():
         window, prev, curr, next = word.next()
         log(f"Slice: {prev}, {curr}, {next}")

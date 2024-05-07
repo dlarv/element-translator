@@ -11,80 +11,47 @@ A list of all periodic element symbols, sorted alphabetically. An '_' is appende
 2. Get $INPUT from user.
 
 3. Convert $INPUT into $WORD:
-- Each char in $INPUT is expanded into 4 chars + 4 chars for padding.
-- Each char in $INPUT has a $WINDOW, which is separated into 3 $PARTS of 2 chars each (6 chars total).
-    - First $PART: previous-char + current-char.
-    - Second $PART: current-char + '_'.
-    - Third $PART: current-char + next-char.
+Each char in $INPUT is expanded into four chars. The first two chars represent whether the char by itself is a valid symbol. The second two represent whether the current char and the next char together are valid symbols.
 
-- If a $PART is in $ELEMENTS, its value is its symbol.
-- **Otherwise, the second $PART = current-char + '*'.
-- and the other $PARTS become '00'.
-- Note: The third $PART of one char is the first $PART of the next.
+How each part is expanded is determined by the following rules:
+Let "A" be the current char being examined.
+Let "B" be the next char in $INPUT.
+Let "E" be the expansion, which is appended to $WORD.
 
-** Having a special indicator like this allows for the second $PART to keep a reference to what letter it represents, while also marking it as invalid. If the importance of this is unclear, it should hopefully make more sense in the example below.
+if A is valid: E = "A_"
+else:          E = "A*"
+if AB is valid: E = "AB"
+else:           E = "00"
 
-E.G.
-$INPUT = 'the'
-Padding chars are added:
-'0the0'
+So the string "the" is expanded like so:
+    1. 't' is not valid, so its expanded to "t*".
+    2. 'th' is valid, and is expanded to "th".
+$WORD = "t*th"
+    3. 'h' is valid, and is expanded as "h_".
+    4. "he" is valid, and is expanded as "he".
+$WORD = "t*thh_he"
+    5. 'e' is not valid, and is expanded as "e*".
+    6. 'e ' is not valid, and is expanded to "00".
+$WORD = "t*thh_hee*00"
+    7. '00' is prepended to $WORD.
+$WORD = "00t*thh_hee*00"
 
-The char 't' is expanded like so:
+4. Iterate over $WORD and determine which symbols will be used.
+Consider the $INPUT "thermodynamics". This word can be spelled completely by only using valid symbols.
 
-        '0t'   't'    'th'
-$WORD = '00' + 't*' + 'th'
+After the expansion step, $WORD = "00t*thh_hee*err*00m*mod*dyy_00a*amm*00i_00c_css_00"
 
-Likewise for 'h' and 'e':
-         'h'    'he'   'e'    'e0'
-$WORD += 'h_' + 'he' + 'e*' + '00'
-Notice how 'th' and 'he' are shared by two letters (e.g. 'th' is the third $PART of 't' and the first $PART of 'h').
+For each step, the program looks at a slice/window of 6 chars, which represent the valid symbols of when letter. E.g. for the letter "t" above, the program would look at "00t*th". The latter four chars are the expansion of "t" from the previous step, and the first two are whether the previous letter and "t" are valid.
 
-Therefore:
-$WORD = '00t*thh_hee*00'
+This slice can be thought of as three boolean values:
+0  0  1   = $W
+00 t* th
 
-4. For i in 2..lengthOf($WORD) - 4
-i += 2
-Let p = i - 2
-Let n = i + 2
-
-These correspond with the 3 parts of the $WINDOW:
-Let prev = $WORD[p] + $WORD[p + 1]
-Let curr = $WORD[i] + $WORD[i + 1]
-Let next = $WORD[n] + $WORD[n + 1]
-
-For this next part, its easier to think of each $PART as a boolean value, where true means it represents a valid periodic symbol (If $PART != '00' && '*' not in $PART).
-Bool($WORD) => 0011100
-
-This is separated into 3 $WINDOWS:
-'0t' and 't' are not valid, 'th' is valid:
-- $W0 = 001 
-'th', 'h', and 'he' are all valid:
-- $W1 = 111 
-'he' is valid, 'e' and 'e0' are not:
-- $W2 = 100
-
-Foreach $W:
-- If $W has only 1 true: 
-    - Letters used in that symbol are considered claimed and cannot be used again.
-    - This is done by setting the 2 previous and 2 next bits to 0, aka clearing the adjacent bits.
-    - If $W = 001, the next window is skipped.
-- If $W has 0 true values it is skipped.
-- If $W has 2 true values and the previous $WINDOW had 2 true values and $W != ??1, claim the first letter.
-
-E.G. 
-$W0 satisfies this condition, so the 't' and 'h' chars are claimed. This means 'h' and 'he' are no longer valid.
-Of course, t is also claimed. And while its boolean form is already 0, the value of 't*' must be cleared, so it actually does change. 
-
-$W0 = 001      => 001
-    = '00t*th' => '0000th'
-$W1 = 111      => 100
-    = 'thh_he' => 'th0000'
-$W2 = 100      => 000
-    = 'hee*00' => '00e*00'
-
-Both $W1 and $W2 are skipped 
-
-$WORD = '0000th0000e*00'
+If $W is 100 | 010 | 001, the only valid symbol is set. 
+    If $W is 001, skip the next iteration.
+Elif $W is 011 | 000, advance to the next iteration.
+Elif $W is 110
+Elif $W is 101 | 111
 
 5. Cleanup and output $WORD
     - Remove '0' and '_'
