@@ -245,7 +245,7 @@ def convert(user_input: str, elements: list) -> Word:
     return output
 
 
-def transform(word: Word) -> Word:
+def transform(word: Word, elements: list) -> Word:
     while word.has_next():
         window, prev, curr, next = word.next()
         log(f"Slice: {prev}, {curr}, {next}")
